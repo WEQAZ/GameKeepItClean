@@ -37,6 +37,8 @@ public class GameScreen implements Screen {
     private Array<String> raindropPaths;
 
     private long lastDropTime;
+    private long lastDropTime2;
+    private long lastDropTime3;
     private long lastDropTime4;
     private int player1Score = 0;
     private int player1Speed = 600;
@@ -45,6 +47,7 @@ public class GameScreen implements Screen {
     private int dropSpeed = 200;
     private int dropVib = 10;
     private int dropleaks = 0;
+    private int lifePoint = 10;
     final Texture Background;
 //    private String[] trashPaths = {"banana.png","battery.png","glass-bottle.png","plastic-bag.png"};
 
@@ -65,17 +68,17 @@ public class GameScreen implements Screen {
         raindrops2 = new Array<Rectangle>();
         raindrops3 = new Array<Rectangle>();
         raindrops4 = new Array<Rectangle>();
-        spawnTrashDrop();
+//        spawnTrashDrop();
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("garbageSoundEffect.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("bgMusic.mp3"));
 
-        Background = new Texture(Gdx.files.internal("background.jpg"));
+        Background = new Texture(Gdx.files.internal("backgroundGame.png"));
 
         rainMusic.setLooping(true);
     }
 
-private void spawnTrashDrop() {
+private void spawnTrashDrop1() {
     Rectangle raindrop1 = new Rectangle();
     raindrop1.x = MathUtils.random(0, 800 - 64);
     raindrop1.y = 480;
@@ -83,15 +86,17 @@ private void spawnTrashDrop() {
     raindrop1.height = 64;
     raindrops1.add(raindrop1);
     lastDropTime = TimeUtils.nanoTime();
-
-    Rectangle raindrop2 = new Rectangle();
-    raindrop2.x = MathUtils.random(0, 800 - 64);
-    raindrop2.y = 480;
-    raindrop2.width = 64;
-    raindrop2.height = 64;
-    raindrops2.add(raindrop2);
-    lastDropTime = TimeUtils.nanoTime();
-
+}
+    private void spawnTrashDrop2() {
+        Rectangle raindrop2 = new Rectangle();
+        raindrop2.x = MathUtils.random(0, 800 - 64);
+        raindrop2.y = 480;
+        raindrop2.width = 64;
+        raindrop2.height = 64;
+        raindrops2.add(raindrop2);
+        lastDropTime = TimeUtils.nanoTime();
+    }
+    private void spawnTrashDrop3() {
     Rectangle raindrop3 = new Rectangle();
     raindrop3.x = MathUtils.random(0, 800 - 64);
     raindrop3.y = 480;
@@ -107,7 +112,7 @@ private void spawnTrashDrop() {
         raindrop4.width = 64;
         raindrop4.height = 64;
         raindrops4.add(raindrop4);
-        lastDropTime4 = TimeUtils.nanoTime();
+        lastDropTime = TimeUtils.nanoTime();
 }
     @Override
     public void render (float delta) {
@@ -122,15 +127,15 @@ private void spawnTrashDrop() {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             colorCode = 0;
-//            player1.setTexture(0); // Change to the redBin.png texture (index 0)
+//            player1.setTexture(0); // Change to the buleBin.png texture (index 0)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.E)) {
             colorCode = 2;
-//            player1.setTexture(2); // Change to the redBin.png texture (index 2)
+//            player1.setTexture(2); // Change to the greenBin.png texture (index 2)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.R)) {
             colorCode = 3;
-//            player1.setTexture(3); // Change to the redBin.png texture (index 3)
+//            player1.setTexture(3); // Change to the yellowBin.png texture (index 3)
         }
         player1.setTexture(colorCode);
 
@@ -153,15 +158,20 @@ private void spawnTrashDrop() {
         if(player1.getRectangle().y > 480 - 64)
             player1.getRectangle().y = 480 -64;
 
-        if(TimeUtils.nanoTime() - lastDropTime > spawnDiff)
-            spawnTrashDrop();
+//        if(TimeUtils.nanoTime() - lastDropTime > spawnDiff)
+//            spawnTrashDrop();
 
 //        List<Integer> randomList = Arrays.asList(1000000000,2000000000);
 //        if(TimeUtils.nanoTime() - lastDropTime4 > randomList.get(new Random().nextInt(randomList.size())))
 //            spawnTrashDrop4();
-        if(MathUtils.random(0,1000) < 10)
+        if(MathUtils.random(0,5000) < 10)
+            spawnTrashDrop1();
+        if(MathUtils.random(0,4000) < 10)
+            spawnTrashDrop2();
+        if(MathUtils.random(0,4000) < 10)
+            spawnTrashDrop3();
+        if(MathUtils.random(0,4000) < 10)
             spawnTrashDrop4();
-
 //        if(TimeUtils.nanoTime() - lastDropTime4 > MathUtils.random(500000000,1000000000))
 //            spawnTrashDrop4();
 
@@ -171,6 +181,7 @@ private void spawnTrashDrop() {
             raindrop1.x += MathUtils.random(-dropVib, dropVib) * Gdx.graphics.getDeltaTime();
             if (raindrop1.y + 64 < 0) {
                 dropleaks++;
+
                 iter1.remove();
             }
             // player --> speed up when gathering 5 drops
@@ -180,6 +191,9 @@ private void spawnTrashDrop() {
                 dropSound.play();
                 if (colorCode == 0) {
                     player1Score++;
+                }
+                else {
+                    lifePoint--;
                 }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
@@ -202,6 +216,9 @@ private void spawnTrashDrop() {
                 if (colorCode == 1) {
                     player1Score++;
                 }
+                else {
+                    lifePoint--;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
@@ -222,6 +239,9 @@ private void spawnTrashDrop() {
                 dropSound.play();
                 if (colorCode == 2) {
                     player1Score++;
+                }
+                else {
+                    lifePoint--;
                 }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
@@ -245,6 +265,9 @@ private void spawnTrashDrop() {
                 if (colorCode == 3) {
                     player1Score++;
                 }
+                else {
+                    lifePoint--;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
@@ -258,6 +281,10 @@ private void spawnTrashDrop() {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        if (lifePoint < 0){
+            game.setScreen(new GameOverScreen(game));
+            dispose();
+        }
         game.batch.draw(Background,0,0);
 
         for (Rectangle raindrop1 : raindrops1) {
@@ -277,7 +304,9 @@ private void spawnTrashDrop() {
 
         game.batch.draw(player1.getTexture(), player1.getRectangle().x, player1.getRectangle().y);
         game.font.draw(game.batch, "P1's score: "+ player1Score + ", speed: "+ player1Speed + "\n"
-                + "Drop leaks: "+ dropleaks, 50, 460);
+                + "Drop leaks: "+ dropleaks + "\n"
+                + "Life point: "+ lifePoint, 50, 460);
+
         game.batch.end();
 
     }
