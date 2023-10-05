@@ -13,7 +13,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
 public class GameScreen implements Screen {
 
     final KeepItClean game;
@@ -31,10 +35,13 @@ public class GameScreen implements Screen {
     private Array<Rectangle> raindrops3;
     private Array<Rectangle> raindrops4;
     private Array<String> raindropPaths;
+
     private long lastDropTime;
+    private long lastDropTime4;
     private int player1Score = 0;
     private int player1Speed = 600;
-    private int spawnDiff = 500000000;
+    private int spawnDiff = 1000000000;
+    private int colorCode;
     private int dropSpeed = 200;
     private int dropVib = 10;
     private int dropleaks = 0;
@@ -92,14 +99,15 @@ private void spawnTrashDrop() {
     raindrop3.height = 64;
     raindrops3.add(raindrop3);
     lastDropTime = TimeUtils.nanoTime();
-
-    Rectangle raindrop4 = new Rectangle();
-    raindrop4.x = MathUtils.random(0, 800 - 64);
-    raindrop4.y = 480;
-    raindrop4.width = 64;
-    raindrop4.height = 64;
-    raindrops4.add(raindrop4);
-    lastDropTime = TimeUtils.nanoTime();
+}
+    private void spawnTrashDrop4() {
+        Rectangle raindrop4 = new Rectangle();
+        raindrop4.x = MathUtils.random(0, 800 - 64);
+        raindrop4.y = 480;
+        raindrop4.width = 64;
+        raindrop4.height = 64;
+        raindrops4.add(raindrop4);
+        lastDropTime4 = TimeUtils.nanoTime();
 }
     @Override
     public void render (float delta) {
@@ -109,17 +117,22 @@ private void spawnTrashDrop() {
         game.batch.setProjectionMatrix(camera.combined);
 
         if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            player1.setTexture(1); // Change to the redBin.png texture (index 1)
+            colorCode = 1;
+//            player1.setTexture(1); // Change to the redBin.png texture (index 1)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            player1.setTexture(0); // Change to the redBin.png texture (index 0)
+            colorCode = 0;
+//            player1.setTexture(0); // Change to the redBin.png texture (index 0)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            player1.setTexture(2); // Change to the redBin.png texture (index 2)
+            colorCode = 2;
+//            player1.setTexture(2); // Change to the redBin.png texture (index 2)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.R)) {
-            player1.setTexture(3); // Change to the redBin.png texture (index 3)
+            colorCode = 3;
+//            player1.setTexture(3); // Change to the redBin.png texture (index 3)
         }
+        player1.setTexture(colorCode);
 
 
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT) )
@@ -143,6 +156,15 @@ private void spawnTrashDrop() {
         if(TimeUtils.nanoTime() - lastDropTime > spawnDiff)
             spawnTrashDrop();
 
+//        List<Integer> randomList = Arrays.asList(1000000000,2000000000);
+//        if(TimeUtils.nanoTime() - lastDropTime4 > randomList.get(new Random().nextInt(randomList.size())))
+//            spawnTrashDrop4();
+        if(MathUtils.random(0,1000) < 10)
+            spawnTrashDrop4();
+
+//        if(TimeUtils.nanoTime() - lastDropTime4 > MathUtils.random(500000000,1000000000))
+//            spawnTrashDrop4();
+
         for (Iterator<Rectangle> iter1 = raindrops1.iterator(); iter1.hasNext(); ) {
             Rectangle raindrop1 = iter1.next();
             raindrop1.y -= dropSpeed * Gdx.graphics.getDeltaTime();
@@ -156,7 +178,9 @@ private void spawnTrashDrop() {
 
             if (raindrop1.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                player1Score++;
+                if (colorCode == 0) {
+                    player1Score++;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
@@ -175,7 +199,9 @@ private void spawnTrashDrop() {
             }
             if (raindrop2.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                player1Score++;
+                if (colorCode == 1) {
+                    player1Score++;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
@@ -194,7 +220,9 @@ private void spawnTrashDrop() {
             }
             if (raindrop3.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                player1Score++;
+                if (colorCode == 2) {
+                    player1Score++;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
@@ -214,7 +242,9 @@ private void spawnTrashDrop() {
 
             if (raindrop4.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                player1Score++;
+                if (colorCode == 3) {
+                    player1Score++;
+                }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
