@@ -1,21 +1,18 @@
 package clean.it.keep;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class MainMenuScreen implements Screen {
-
+public class TutorialScreen implements Screen {
     final KeepItClean game;
     OrthographicCamera camera;
-    private Texture howTo;
-
-    public MainMenuScreen(final KeepItClean game) {
+    private Texture HowTo;
+    public TutorialScreen(KeepItClean game) {
         this.game = game;
-        howTo = new Texture(Gdx.files.internal("mainScreen.png"));
+        HowTo = new Texture(Gdx.files.internal("howToMatch.png"));
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
     }
@@ -28,15 +25,14 @@ public class MainMenuScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.batch.draw(howTo,0,0);
+        game.batch.draw(HowTo,0,0);
         game.batch.end();
 
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            game.changeToTutorialScreen();
+        if (Gdx.input.isTouched()) {
+            game.setScreen(new GameScreen(game));
             dispose();
         }
     }
-
     @Override
     public void show() {
 
@@ -64,5 +60,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
+
     }
 }

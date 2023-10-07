@@ -12,11 +12,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
-
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
 
 public class GameScreen implements Screen {
 
@@ -34,14 +30,14 @@ public class GameScreen implements Screen {
     private Array<Rectangle> raindrops2;
     private Array<Rectangle> raindrops3;
     private Array<Rectangle> raindrops4;
-    private Array<String> raindropPaths;
+//    private Array<String> raindropPaths;
 
     private long lastDropTime;
     private long lastDropTime2;
     private long lastDropTime3;
     private long lastDropTime4;
     private int player1Score = 0;
-    private int player1Speed = 600;
+    private int player1Speed = 500;
     private int spawnDiff = 1000000000;
     private int colorCode;
     private int dropSpeed = 200;
@@ -49,8 +45,6 @@ public class GameScreen implements Screen {
     private int dropleaks = 0;
     private int lifePoint = 10;
     final Texture Background;
-//    private String[] trashPaths = {"banana.png","battery.png","glass-bottle.png","plastic-bag.png"};
-
     public GameScreen(final KeepItClean game) {
         this.game = game;
 
@@ -68,12 +62,11 @@ public class GameScreen implements Screen {
         raindrops2 = new Array<Rectangle>();
         raindrops3 = new Array<Rectangle>();
         raindrops4 = new Array<Rectangle>();
-//        spawnTrashDrop();
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("garbageSoundEffect.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("bgMusic.mp3"));
 
-        Background = new Texture(Gdx.files.internal("backgroundGame.png"));
+        Background = new Texture(Gdx.files.internal("gameScreen.png"));
 
         rainMusic.setLooping(true);
     }
@@ -158,22 +151,15 @@ private void spawnTrashDrop1() {
         if(player1.getRectangle().y > 480 - 64)
             player1.getRectangle().y = 480 -64;
 
-//        if(TimeUtils.nanoTime() - lastDropTime > spawnDiff)
-//            spawnTrashDrop();
-
-//        List<Integer> randomList = Arrays.asList(1000000000,2000000000);
-//        if(TimeUtils.nanoTime() - lastDropTime4 > randomList.get(new Random().nextInt(randomList.size())))
-//            spawnTrashDrop4();
+        // if random true trash drop
         if(MathUtils.random(0,5000) < 10)
             spawnTrashDrop1();
-        if(MathUtils.random(0,4000) < 10)
+        if(MathUtils.random(0,5000) < 10)
             spawnTrashDrop2();
-        if(MathUtils.random(0,4000) < 10)
+        if(MathUtils.random(0,5000) < 10)
             spawnTrashDrop3();
-        if(MathUtils.random(0,4000) < 10)
+        if(MathUtils.random(0,5000) < 10)
             spawnTrashDrop4();
-//        if(TimeUtils.nanoTime() - lastDropTime4 > MathUtils.random(500000000,1000000000))
-//            spawnTrashDrop4();
 
         for (Iterator<Rectangle> iter1 = raindrops1.iterator(); iter1.hasNext(); ) {
             Rectangle raindrop1 = iter1.next();
@@ -184,8 +170,6 @@ private void spawnTrashDrop1() {
 
                 iter1.remove();
             }
-            // player --> speed up when gathering 5 drops
-            // other player --> slower
 
             if (raindrop1.overlaps(player1.getRectangle())) {
                 dropSound.play();
@@ -282,7 +266,7 @@ private void spawnTrashDrop1() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         if (lifePoint < 0){
-            game.setScreen(new GameOverScreen(game));
+            game.changeToGameOverScreen();
             dispose();
         }
         game.batch.draw(Background,0,0);

@@ -13,6 +13,7 @@ public class KeepItClean extends Game {
 		batch = new SpriteBatch();
 		font = new BitmapFont();
 		this.setScreen(new MainMenuScreen(this));
+
 	}
 
 	@Override
@@ -25,4 +26,21 @@ public class KeepItClean extends Game {
 		batch.dispose();
 		font.dispose();
 	}
+
+	public void changeToTutorialScreen() {
+		setScreen(new TutorialScreen(this));
+	}
+
+	public void changeToGameScreen() {
+		setScreen(new GameScreen(this));
+	}
+
+	public void changeToMainMenuScreen() {
+		setScreen(new MainMenuScreen(this));
+	}
+
+	public void changeToGameOverScreen() {
+		setScreen(new GameOverScreen(this));
+	}
+
 }
