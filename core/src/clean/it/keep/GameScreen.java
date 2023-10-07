@@ -2,6 +2,7 @@ package clean.it.keep;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -31,7 +32,6 @@ public class GameScreen implements Screen {
     private Array<Rectangle> raindrops3;
     private Array<Rectangle> raindrops4;
 //    private Array<String> raindropPaths;
-
     private long lastDropTime;
     private long lastDropTime2;
     private long lastDropTime3;
@@ -45,6 +45,9 @@ public class GameScreen implements Screen {
     private int dropleaks = 0;
     private int lifePoint = 10;
     final Texture Background;
+    private Texture lifePointImage;
+    private int highestScore = 0;
+
     public GameScreen(final KeepItClean game) {
         this.game = game;
 
@@ -67,8 +70,28 @@ public class GameScreen implements Screen {
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("bgMusic.mp3"));
 
         Background = new Texture(Gdx.files.internal("gameScreen.png"));
+        lifePointImage = new Texture(Gdx.files.internal("lifePointImage.png"));
+
+        highestScore = loadHighScore();
 
         rainMusic.setLooping(true);
+    }
+    private void saveHighScore(int score) {
+        Preferences prefs = Gdx.app.getPreferences("MyGamePreferences");
+        prefs.putInteger("highScore", score);
+        prefs.flush();
+    }
+
+    // Method to load the highest score
+    private int loadHighScore() {
+        Preferences prefs = Gdx.app.getPreferences("MyGamePreferences");
+        return prefs.getInteger("highScore", 0); // Default to 0 if no high score is saved
+    }
+    private void updateHighScore() {
+        if (player1Score > highestScore) {
+            highestScore = player1Score;
+            saveHighScore(highestScore);
+        }
     }
 
 private void spawnTrashDrop1() {
@@ -106,7 +129,9 @@ private void spawnTrashDrop1() {
         raindrop4.height = 64;
         raindrops4.add(raindrop4);
         lastDropTime = TimeUtils.nanoTime();
+
 }
+
     @Override
     public void render (float delta) {
         ScreenUtils.clear(0,0,0.4f,1);
@@ -221,7 +246,7 @@ private void spawnTrashDrop1() {
             }
             if (raindrop3.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                if (colorCode == 2) {
+                if (colorCode == 3) {
                     player1Score++;
                 }
                 else {
@@ -246,7 +271,7 @@ private void spawnTrashDrop1() {
 
             if (raindrop4.overlaps(player1.getRectangle())) {
                 dropSound.play();
-                if (colorCode == 3) {
+                if (colorCode == 2) {
                     player1Score++;
                 }
                 else {
@@ -285,11 +310,23 @@ private void spawnTrashDrop1() {
         for (Rectangle raindrop4 : raindrops4) {
             game.batch.draw(dropImage4, raindrop4.x, raindrop4.y);
         }
+        if (lifePoint < 0) {
+            updateHighScore();
+            game.changeToGameOverScreen();
+            dispose();
+        }
 
         game.batch.draw(player1.getTexture(), player1.getRectangle().x, player1.getRectangle().y);
-        game.font.draw(game.batch, "P1's score: "+ player1Score + ", speed: "+ player1Speed + "\n"
+        game.font.draw(game.batch, "score: "+ player1Score + ", speed: "+ player1Speed + "\n"
                 + "Drop leaks: "+ dropleaks + "\n"
-                + "Life point: "+ lifePoint, 50, 460);
+                + "Life point: "+ lifePoint +"\n"
+                + "High score: "+ highestScore, 25, 440);
+
+        float lifePointX = 20; // Adjust the X-coordinate as needed
+        for (int i = 0; i < lifePoint; i++) {
+            game.batch.draw(lifePointImage, lifePointX, 450);
+            lifePointX += lifePointImage.getWidth() + 2; // Add spacing between life point images
+        }
 
         game.batch.end();
 
