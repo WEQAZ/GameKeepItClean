@@ -9,10 +9,8 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.TimeUtils;
 import java.util.Iterator;
 
 public class GameScreen implements Screen {
@@ -24,21 +22,13 @@ public class GameScreen implements Screen {
     private Texture dropImage3;
     private Texture dropImage4;
     private Sound dropSound;
+    private Sound failDropSound;
     private Music rainMusic;
     private Player player1;
-    private Array<Rectangle> trashDrops;
-    private Array<Rectangle> raindrops1;
-    private Array<Rectangle> raindrops2;
-    private Array<Rectangle> raindrops3;
-    private Array<Rectangle> raindrops4;
-//    private Array<String> raindropPaths;
-    private long lastDropTime;
-    private long lastDropTime2;
-    private long lastDropTime3;
-    private long lastDropTime4;
+
+    private Array<TrashDrop> trashDrops;
     private int player1Score = 0;
     private int player1Speed = 500;
-    private int spawnDiff = 1000000000;
     private int colorCode;
     private int dropSpeed = 200;
     private int dropVib = 10;
@@ -58,15 +48,13 @@ public class GameScreen implements Screen {
 
         dropImage1 = new Texture(Gdx.files.internal("banana.png"));
         dropImage2 = new Texture(Gdx.files.internal("battery.png"));
-        dropImage3 = new Texture(Gdx.files.internal("plastic-bag.png"));
-        dropImage4 = new Texture(Gdx.files.internal("glass-bottle.png"));
+        dropImage3 = new Texture(Gdx.files.internal("glass-bottle.png"));
+        dropImage4 = new Texture(Gdx.files.internal("plastic-bag.png"));
 
-        raindrops1 = new Array<Rectangle>();
-        raindrops2 = new Array<Rectangle>();
-        raindrops3 = new Array<Rectangle>();
-        raindrops4 = new Array<Rectangle>();
+        trashDrops = new Array<TrashDrop>();
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("garbageSoundEffect.wav"));
+        failDropSound = Gdx.audio.newSound(Gdx.files.internal("IncorrectSoundEffect.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("bgMusic.mp3"));
 
         Background = new Texture(Gdx.files.internal("gameScreen.png"));
@@ -94,43 +82,25 @@ public class GameScreen implements Screen {
         }
     }
 
-private void spawnTrashDrop1() {
-    Rectangle raindrop1 = new Rectangle();
-    raindrop1.x = MathUtils.random(0, 800 - 64);
-    raindrop1.y = 480;
-    raindrop1.width = 64;
-    raindrop1.height = 64;
-    raindrops1.add(raindrop1);
-    lastDropTime = TimeUtils.nanoTime();
-}
-    private void spawnTrashDrop2() {
-        Rectangle raindrop2 = new Rectangle();
-        raindrop2.x = MathUtils.random(0, 800 - 64);
-        raindrop2.y = 480;
-        raindrop2.width = 64;
-        raindrop2.height = 64;
-        raindrops2.add(raindrop2);
-        lastDropTime = TimeUtils.nanoTime();
-    }
-    private void spawnTrashDrop3() {
-    Rectangle raindrop3 = new Rectangle();
-    raindrop3.x = MathUtils.random(0, 800 - 64);
-    raindrop3.y = 480;
-    raindrop3.width = 64;
-    raindrop3.height = 64;
-    raindrops3.add(raindrop3);
-    lastDropTime = TimeUtils.nanoTime();
-}
-    private void spawnTrashDrop4() {
-        Rectangle raindrop4 = new Rectangle();
-        raindrop4.x = MathUtils.random(0, 800 - 64);
-        raindrop4.y = 480;
-        raindrop4.width = 64;
-        raindrop4.height = 64;
-        raindrops4.add(raindrop4);
-        lastDropTime = TimeUtils.nanoTime();
+    private void spawnTrashDrop() {
+        Texture[] trashTextures = { dropImage1, dropImage2, dropImage3, dropImage4 };
+        Texture selectedTexture = trashTextures[MathUtils.random(trashTextures.length - 1)];
 
-}
+        int trashType = -1; // Default value, or any invalid value
+
+        if (selectedTexture == dropImage1) {
+            trashType = 0; // Set the trash type for banana
+        } else if (selectedTexture == dropImage2) {
+            trashType = 1; // Set the trash type for battery
+        } else if (selectedTexture == dropImage3) {
+            trashType = 2; // Set the trash type for bottle
+        } else if (selectedTexture == dropImage4) {
+            trashType = 3; // Set the trash type for  bag
+        }
+
+        TrashDrop trashDrop = new TrashDrop(selectedTexture, trashType);
+        trashDrops.add(trashDrop);
+    }
 
     @Override
     public void render (float delta) {
@@ -176,113 +146,70 @@ private void spawnTrashDrop1() {
         if(player1.getRectangle().y > 480 - 64)
             player1.getRectangle().y = 480 -64;
 
-        // if random true trash drop
-        if(MathUtils.random(0,5000) < 10)
-            spawnTrashDrop1();
-        if(MathUtils.random(0,5000) < 10)
-            spawnTrashDrop2();
-        if(MathUtils.random(0,5000) < 10)
-            spawnTrashDrop3();
-        if(MathUtils.random(0,5000) < 10)
-            spawnTrashDrop4();
-
-        for (Iterator<Rectangle> iter1 = raindrops1.iterator(); iter1.hasNext(); ) {
-            Rectangle raindrop1 = iter1.next();
-            raindrop1.y -= dropSpeed * Gdx.graphics.getDeltaTime();
-            raindrop1.x += MathUtils.random(-dropVib, dropVib) * Gdx.graphics.getDeltaTime();
-            if (raindrop1.y + 64 < 0) {
-                dropleaks++;
-
-                iter1.remove();
-            }
-
-            if (raindrop1.overlaps(player1.getRectangle())) {
-                dropSound.play();
-                if (colorCode == 0) {
-                    player1Score++;
-                }
-                else {
-                    lifePoint--;
-                }
-                if (player1Score % 5 == 0) {
-                    player1Speed += 50;
-                }
-                iter1.remove();
-            }
-
+        if (MathUtils.random(0, 1000) < 10) {
+            spawnTrashDrop();
         }
 
-        for (Iterator<Rectangle> iter2 = raindrops2.iterator(); iter2.hasNext(); ) {
-            Rectangle raindrop2 = iter2.next();
-            raindrop2.y -= dropSpeed * Gdx.graphics.getDeltaTime();
-            raindrop2.x += MathUtils.random(-dropVib, dropVib) * Gdx.graphics.getDeltaTime();
-            if (raindrop2.y + 64 < 0) {
+        for (Iterator<TrashDrop> iter = trashDrops.iterator(); iter.hasNext(); ) {
+            TrashDrop trashDrop = iter.next();
+            trashDrop.update(Gdx.graphics.getDeltaTime(), dropSpeed, dropVib);
+            if (trashDrop.isOutOfBounds()) {
                 dropleaks++;
-                iter2.remove();
+                iter.remove();
             }
-            if (raindrop2.overlaps(player1.getRectangle())) {
-                dropSound.play();
-                if (colorCode == 1) {
-                    player1Score++;
-                }
-                else {
-                    lifePoint--;
+
+            if (trashDrop.getRectangle().overlaps(player1.getRectangle())) {
+                int trashType = trashDrop.getTrashType();
+                switch (colorCode) {
+                    case 0: // Blue (banana)
+                        if (trashType == 0) {
+                            dropSound.play();
+                            player1Score++;
+                        } else {
+                            failDropSound.play();
+                            lifePoint--;
+                        }
+                        break;
+
+                    case 1: // Red (battery)
+                        if (trashType == 1) {
+                            dropSound.play();
+                            player1Score++;
+                        } else {
+                            failDropSound.play();
+                            lifePoint--;
+                        }
+                        break;
+
+                    case 2: // Green (bottle)
+                        if (trashType == 2) {
+                            dropSound.play();
+                            player1Score++;
+                        } else {
+                            failDropSound.play();
+                            lifePoint--;
+                        }
+                        break;
+
+                    case 3: // Yellow (bag)
+                        if (trashType == 3) {
+                            dropSound.play();
+                            player1Score++;
+                        } else {
+                            failDropSound.play();
+                            lifePoint--;
+                        }
+                        break;
+
+                    default:
+                        lifePoint--; // Default case for other colors
+                        break;
                 }
                 if (player1Score % 5 == 0) {
                     player1Speed += 50;
                 }
-                iter2.remove();
-
+                iter.remove();
             }
-        }
-
-        for (Iterator<Rectangle> iter3 = raindrops3.iterator(); iter3.hasNext(); ) {
-            Rectangle raindrop3 = iter3.next();
-            raindrop3.y -= dropSpeed * Gdx.graphics.getDeltaTime();
-            raindrop3.x += MathUtils.random(-dropVib, dropVib) * Gdx.graphics.getDeltaTime();
-            if (raindrop3.y + 64 < 0) {
-                dropleaks++;
-                iter3.remove();
-            }
-            if (raindrop3.overlaps(player1.getRectangle())) {
-                dropSound.play();
-                if (colorCode == 3) {
-                    player1Score++;
-                }
-                else {
-                    lifePoint--;
-                }
-                if (player1Score % 5 == 0) {
-                    player1Speed += 50;
-                }
-                iter3.remove();
-
-            }
-        }
-
-        for (Iterator<Rectangle> iter4 = raindrops4.iterator(); iter4.hasNext(); ) {
-            Rectangle raindrop4 = iter4.next();
-            raindrop4.y -= dropSpeed * Gdx.graphics.getDeltaTime();
-            raindrop4.x += MathUtils.random(-dropVib, dropVib) * Gdx.graphics.getDeltaTime();
-            if (raindrop4.y + 64 < 0) {
-                dropleaks++;
-                iter4.remove();
-            }
-
-            if (raindrop4.overlaps(player1.getRectangle())) {
-                dropSound.play();
-                if (colorCode == 2) {
-                    player1Score++;
-                }
-                else {
-                    lifePoint--;
-                }
-                if (player1Score % 5 == 0) {
-                    player1Speed += 50;
-                }
-                iter4.remove();
-            }
-
         }
 
         ScreenUtils.clear(0, 0, 0.3f, 1);
@@ -296,20 +223,13 @@ private void spawnTrashDrop1() {
         }
         game.batch.draw(Background,0,0);
 
-        for (Rectangle raindrop1 : raindrops1) {
-            game.batch.draw(dropImage1, raindrop1.x, raindrop1.y);
-        }
-        for (Rectangle raindrop2 : raindrops2) {
-            game.batch.draw(dropImage2, raindrop2.x, raindrop2.y);
-        }
-
-        for (Rectangle raindrop3 : raindrops3) {
-            game.batch.draw(dropImage3, raindrop3.x, raindrop3.y);
+        for (TrashDrop trashDrop : trashDrops) {
+            Texture trashTexture = trashDrop.getTexture();
+            float x = trashDrop.getRectangle().x;
+            float y = trashDrop.getRectangle().y;
+            game.batch.draw(trashTexture, x, y);
         }
 
-        for (Rectangle raindrop4 : raindrops4) {
-            game.batch.draw(dropImage4, raindrop4.x, raindrop4.y);
-        }
         if (lifePoint < 0) {
             updateHighScore();
             game.changeToGameOverScreen();
