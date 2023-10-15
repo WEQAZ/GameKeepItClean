@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+
 import java.util.Iterator;
 
 public class GameScreen implements Screen {
@@ -25,7 +26,6 @@ public class GameScreen implements Screen {
     private Sound failDropSound;
     private Music rainMusic;
     private Player player1;
-
     private Array<TrashDrop> trashDrops;
     private int player1Score = 0;
     private int player1Speed = 500;
@@ -43,27 +43,39 @@ public class GameScreen implements Screen {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
-        String[] paths = {"blueBin.png","redBin.png","greenBin.png","yellowBin.png"};
+
+        // Define an array of file paths for player1's image resources.
+        String[] paths = {"blueBin.png", "redBin.png", "greenBin.png", "yellowBin.png"};
+        // Create a Player object with specific position, and image paths.
         player1 = new Player(704, 20, 64, 64, paths);
 
+
+        // Create a Texture for the first type of trash drop (e.g., banana)
         dropImage1 = new Texture(Gdx.files.internal("banana.png"));
+
+        // Create a Texture for the second type of trash drop (e.g., battery)
         dropImage2 = new Texture(Gdx.files.internal("battery.png"));
+
+        // Create a Texture for the third type of trash drop (e.g., glass bottle)
         dropImage3 = new Texture(Gdx.files.internal("glass-bottle.png"));
+
+        // Create a Texture for the fourth type of trash drop (e.g., plastic bag)
         dropImage4 = new Texture(Gdx.files.internal("plastic-bag.png"));
 
+        // Initialize an Array to store TrashDrop instances (representing falling trash objects)
         trashDrops = new Array<TrashDrop>();
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("garbageSoundEffect.wav"));
         failDropSound = Gdx.audio.newSound(Gdx.files.internal("IncorrectSoundEffect.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("bgMusic.mp3"));
-
         Background = new Texture(Gdx.files.internal("gameScreen.png"));
         lifePointImage = new Texture(Gdx.files.internal("lifePointImage.png"));
-
+        // set high score = 0
         highestScore = loadHighScore();
-
         rainMusic.setLooping(true);
     }
+
+    // Saves the player's high score to device preferences.
     private void saveHighScore(int score) {
         Preferences prefs = Gdx.app.getPreferences("MyGamePreferences");
         prefs.putInteger("highScore", score);
@@ -75,6 +87,8 @@ public class GameScreen implements Screen {
         Preferences prefs = Gdx.app.getPreferences("MyGamePreferences");
         return prefs.getInteger("highScore", 0); // Default to 0 if no high score is saved
     }
+
+    // update high score
     private void updateHighScore() {
         if (player1Score > highestScore) {
             highestScore = player1Score;
@@ -83,7 +97,7 @@ public class GameScreen implements Screen {
     }
 
     private void spawnTrashDrop() {
-        Texture[] trashTextures = { dropImage1, dropImage2, dropImage3, dropImage4 };
+        Texture[] trashTextures = {dropImage1, dropImage2, dropImage3, dropImage4};
         Texture selectedTexture = trashTextures[MathUtils.random(trashTextures.length - 1)];
 
         int trashType = -1; // Default value, or any invalid value
@@ -103,48 +117,45 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void render (float delta) {
-        ScreenUtils.clear(0,0,0.4f,1);
+    public void render(float delta) {
+        ScreenUtils.clear(0, 0, 0.4f, 1);
 
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
+        // if user press key it gonna change color that user want
         if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
             colorCode = 1;
-//            player1.setTexture(1); // Change to the redBin.png texture (index 1)
+            // player1.setTexture(1); // Change to the redBin.png texture (index 1)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             colorCode = 0;
-//            player1.setTexture(0); // Change to the buleBin.png texture (index 0)
+            // player1.setTexture(0); // Change to the buleBin.png texture (index 0)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.E)) {
             colorCode = 2;
-//            player1.setTexture(2); // Change to the greenBin.png texture (index 2)
+            // player1.setTexture(2); // Change to the greenBin.png texture (index 2)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.R)) {
             colorCode = 3;
-//            player1.setTexture(3); // Change to the yellowBin.png texture (index 3)
+            // player1.setTexture(3); // Change to the yellowBin.png texture (index 3)
         }
         player1.setTexture(colorCode);
 
 
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) )
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
             player1.getRectangle().x -= player1Speed * Gdx.graphics.getDeltaTime();
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) )
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
             player1.getRectangle().x += player1Speed * Gdx.graphics.getDeltaTime();
-        if(Gdx.input.isKeyPressed(Input.Keys.UP) )
+        if (Gdx.input.isKeyPressed(Input.Keys.UP))
             player1.getRectangle().y += player1Speed * Gdx.graphics.getDeltaTime();
-        if(Gdx.input.isKeyPressed(Input.Keys.DOWN) )
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN))
             player1.getRectangle().y -= player1Speed * Gdx.graphics.getDeltaTime();
 
-        if(player1.getRectangle().x < 0)
-            player1.getRectangle().x = 0;
-        if(player1.getRectangle().x > 800 - 64)
-            player1.getRectangle().x = 800 - 64;
-        if(player1.getRectangle().y < 0)
-            player1.getRectangle().y = 0;
-        if(player1.getRectangle().y > 480 - 64)
-            player1.getRectangle().y = 480 -64;
+        if (player1.getRectangle().x < 0) player1.getRectangle().x = 0;
+        if (player1.getRectangle().x > 800 - 64) player1.getRectangle().x = 800 - 64;
+        if (player1.getRectangle().y < 0) player1.getRectangle().y = 0;
+        if (player1.getRectangle().y > 480 - 64) player1.getRectangle().y = 480 - 64;
 
         if (MathUtils.random(0, 1000) < 10) {
             spawnTrashDrop();
@@ -217,11 +228,14 @@ public class GameScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        if (lifePoint < 0){
+
+        // Check if the player's life points have fallen below zero.
+        if (lifePoint < 0) {
+            // change to game over screen.
             game.changeToGameOverScreen();
             dispose();
         }
-        game.batch.draw(Background,0,0);
+        game.batch.draw(Background, 0, 0);
 
         for (TrashDrop trashDrop : trashDrops) {
             Texture trashTexture = trashDrop.getTexture();
@@ -230,18 +244,11 @@ public class GameScreen implements Screen {
             game.batch.draw(trashTexture, x, y);
         }
 
-        if (lifePoint < 0) {
-            updateHighScore();
-            game.changeToGameOverScreen();
-            dispose();
-        }
 
         game.batch.draw(player1.getTexture(), player1.getRectangle().x, player1.getRectangle().y);
-        game.font.draw(game.batch, "score: "+ player1Score + ", speed: "+ player1Speed + "\n"
-                + "Drop leaks: "+ dropleaks + "\n"
-                + "Life point: "+ lifePoint +"\n"
-                + "High score: "+ highestScore, 25, 440);
+        game.font.draw(game.batch, "score: " + player1Score + ", speed: " + player1Speed + "\n" + "Drop leaks: " + dropleaks + "\n" + "Life point: " + lifePoint + "\n" + "High score: " + highestScore, 25, 440);
 
+        // draw life point image
         float lifePointX = 20; // Adjust the X-coordinate as needed
         for (int i = 0; i < lifePoint; i++) {
             game.batch.draw(lifePointImage, lifePointX, 450);
@@ -251,6 +258,7 @@ public class GameScreen implements Screen {
         game.batch.end();
 
     }
+
     @Override
     public void resize(int width, int height) {
     }
